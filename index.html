@@ -21,7 +21,7 @@
 
         .container {
             width: 90%;
-            max-width: 900px;
+            max-width: 1000px;
             background: white;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             border-radius: 12px;
@@ -42,7 +42,7 @@
             margin-bottom: 20px;
         }
 
-        .moisture-frame {
+        .frame {
             height: 300px;
             width: 95%;
             border: 2px solid #3498db;
@@ -51,16 +51,17 @@
             background: #f1f1f1;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
 
-        .reading {
+        .reading, .pump-log {
             padding: 10px;
             border-bottom: 1px solid #ddd;
             font-size: 18px;
             color: #555;
         }
 
-        .reading:last-child {
+        .reading:last-child, .pump-log:last-child {
             border-bottom: none;
         }
 
@@ -139,8 +140,13 @@
 
     <h2>Moisture Readings</h2>
     
-    <div class="moisture-frame" id="moisture-frame">
-        <!-- Readings will be appended here -->
+    <div class="frame" id="moisture-frame">
+        <!-- Moisture readings -->
+    </div>
+
+    <h2>Pump Activity Log</h2>
+    <div class="frame" id="pump-log-frame">
+        <!-- Pump logs -->
     </div>
 
     <div class="button-container">
@@ -151,9 +157,10 @@
     </div>
 
     <footer>
-        🌿 Designed by <strong>Group-255</strong> | IoT Project
+        🌿 Designed by <strong>Aditya Kumar Lala</strong> | IoT Project
     </footer>
 </div>
+
 
 <script>
     const token = "13m0cMhUG8Y_Dpozo9mkrgLmYDtC29oW";  // Replace with your Blynk token
@@ -162,6 +169,7 @@
 
     // Array to store moisture log readings
     const moistureLog = [];
+    const pumpLog = [];
 
     //setInterval(fetchMoisture, 3000);
 
@@ -169,6 +177,9 @@
     async function fetchMoisture() {
         try {
             const response = await fetch(`https://blynk.cloud/external/api/get?token=${token}&${moisturePin}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch moisture: ${response.status}`);
+            }
             const moisture = await response.text();
             
             const frame = document.getElementById('moisture-frame');
@@ -198,8 +209,25 @@
     // Function to control the pump (1 = OFF, 0 = ON)
     async function controlPump(state) {
         const action = state === 1 ? "OFF" : "ON";
+        const timestamp = new Date().toLocaleString();
         try {
-            await fetch(`https://blynk.cloud/external/api/update?token=${token}&${pumpPin}=${state}`);
+            const response = await fetch(`https://blynk.cloud/external/api/update?token=${token}&${pumpPin}=${state}`);
+            if (!response.ok) {
+                throw new Error(`Failed to update pump: ${response.status}`);
+            }
+            pumpLog.push({ action, timestamp });
+
+            const logFrame = document.getElementById('pump-log-frame');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'pump-log';
+            logEntry.textContent = `Pump turned ${action} at ${timestamp}`;
+            logFrame.prepend(logEntry);
+
+            // Limit display to 30 pump logs
+            if (logFrame.children.length > 30) {
+                logFrame.removeChild(logFrame.lastChild);
+            }
+
             alert(`Pump turned ${action}`);
         } catch (error) {
             console.error(`Error turning pump ${action}:`, error);
