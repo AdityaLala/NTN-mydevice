@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart IoT Irrigation System</title>
+    <style>
+        /* Styling the page */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74EBD5, #ACB6E5);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background: white;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            animation: fadeIn 1s;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #16a085;
+            font-size: 26px;
+            margin-bottom: 20px;
+        }
+
+        .moisture-frame {
+            height: 300px;
+            width: 95%;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            overflow-y: auto;
+            background: #f1f1f1;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .reading {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 18px;
+            color: #555;
+        }
+
+        .reading:last-child {
+            border-bottom: none;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 15px 35px;
+            font-size: 18px;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 10px;
+        }
+
+        .refresh-btn {
+            background: #4CAF50; /* Green */
+        }
+
+        .refresh-btn:hover {
+            background: #45a049;
+        }
+
+        .on-btn {
+            background: #27ae60; /* Light Green */
+        }
+
+        .on-btn:hover {
+            background: #2ecc71;
+        }
+
+        .off-btn {
+            background: #e74c3c; /* Red */
+        }
+
+        .off-btn:hover {
+            background: #c0392b;
+        }
+
+        .csv-btn {
+            background: #3498db; /* Blue */
+        }
+
+        .csv-btn:hover {
+            background: #2980b9;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌿 Smart IoT Irrigation System</h1>
+
+    <h2>Moisture Readings</h2>
+    
+    <div class="moisture-frame" id="moisture-frame">
+        <!-- Readings will be appended here -->
+    </div>
+
+    <div class="button-container">
+        <button class="refresh-btn" onclick="fetchMoisture()">Refresh Moisture</button>
+        <button class="on-btn" onclick="controlPump(0)">Turn ON</button>
+        <button class="off-btn" onclick="controlPump(1)">Turn OFF</button>
+        <button class="csv-btn" onclick="downloadCSV()">Download CSV</button>
+    </div>
+
+    <footer>
+        🌿 Designed by <strong>Group-255</strong> | IoT Project
+    </footer>
+</div>
+
+<script>
+    const token = "13m0cMhUG8Y_Dpozo9mkrgLmYDtC29oW";  // Replace with your Blynk token
+    const moisturePin = "V4";  // Moisture sensor pin
+    const pumpPin = "V0";  // Pump control pin
+
+    // Array to store moisture log readings
+    const moistureLog = [];
+    setInterval(fetchMoisture, 3000);
+    // Function to fetch the moisture value and display it in the frame
+    async function fetchMoisture() {
+        try {
+            const response = await fetch(`https://blynk.cloud/external/api/get?token=${token}&${moisturePin}`);
+            const moisture = await response.text();
+            
+            const frame = document.getElementById('moisture-frame');
+            const newReading = document.createElement('div');
+            newReading.className = 'reading';
+
+            const timestamp = new Date().toLocaleString();
+            newReading.innerText = `Moisture: ${moisture}% | ${timestamp}`;
+            
+            // Append the reading to the frame
+            frame.prepend(newReading);
+
+            // Save the reading in the log array
+            moistureLog.push({ moisture, timestamp });
+
+            // Limit the frame display to 30 readings
+            if (frame.children.length > 30) {
+                frame.removeChild(frame.lastChild);
+            }
+
+        } catch (error) {
+            console.error('Error fetching moisture:', error);
+            alert("Failed to fetch moisture data.");
+        }
+    }
+
+    // Function to control the pump (1 = OFF, 0 = ON)
+    async function controlPump(state) {
+        const action = state === 1 ? "OFF" : "ON";
+        try {
+            await fetch(`https://blynk.cloud/external/api/update?token=${token}&${pumpPin}=${state}`);
+            alert(`Pump turned ${action}`);
+        } catch (error) {
+            console.error(`Error turning pump ${action}:`, error);
+            alert(`Failed to turn pump ${action}`);
+        }
+    }
+
+    // Function to download the log as CSV
+    function downloadCSV() {
+        if (moistureLog.length === 0) {
+            alert("No data available to download.");
+            return;
+        }
+
+        let csvContent = "Moisture (%), Timestamp\n";
+
+        moistureLog.forEach(entry => {
+            csvContent += `${entry.moisture}, ${entry.timestamp}\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.setAttribute("href", url);
+        a.setAttribute("download", "moisture_log.csv");
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+</script>
+
+</body>
+</html>
+
