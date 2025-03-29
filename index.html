@@ -236,29 +236,52 @@
     }
 
     // Function to download the log as CSV
-    function downloadCSV() {
-        if (moistureLog.length === 0) {
-            alert("No data available to download.");
-            return;
-        }
+      function downloadCSV() {
+    if (moistureLog.length === 0 && pumpLog.length === 0) {
+        alert("No data available to download.");
+        return;
+    }
 
-        let csvContent = "Moisture, Timestamp\n";
+    let csvContent = "IoT Irrigation System Log\n\n";
 
+    // Moisture Section
+    csvContent += "Moisture Readings\n";
+    csvContent += "Moisture (%), Timestamp\n";
+    
+    if (moistureLog.length > 0) {
         moistureLog.forEach(entry => {
             csvContent += `${entry.moisture}, ${entry.timestamp}\n`;
         });
-
-        const blob = new Blob([csvContent], { type: "text/csv" });
-        const url = window.URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.setAttribute("href", url);
-        a.setAttribute("download", "moisture_log.csv");
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+    } else {
+        csvContent += "No moisture readings available.\n";
     }
+
+    csvContent += "\n";
+
+    // Pump Activity Section
+    csvContent += "Pump Activity Logs\n";
+    csvContent += "Action, Timestamp\n";
+
+    if (pumpLog.length > 0) {
+        pumpLog.forEach(entry => {
+            csvContent += `${entry.action}, ${entry.timestamp}\n`;
+        });
+    } else {
+        csvContent += "No pump activity logs available.\n";
+    }
+
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "iot_log.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
 </script>
 
 </body>
