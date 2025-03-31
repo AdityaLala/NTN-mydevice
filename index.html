@@ -163,7 +163,7 @@
 
 
 <script>
-    const token = "13m0cMhUG8Y_Dpozo9mkrgLmYDtC29oW";  // Replace with your Blynk token
+    const token = "Fr4mSttacCUaQpyXjPayWiYrr2K6G7sL";  // Replace with your Blynk token
     const moisturePin = "V4";  // Moisture sensor pin
     const pumpPin = "V0";  // Pump control pin
 
@@ -171,7 +171,7 @@
     const moistureLog = [];
     const pumpLog = [];
 
-    setInterval(fetchMoisture, 3000);
+    //setInterval(fetchMoisture, 3000);
 
     // Function to fetch the moisture value and display it in the frame
     async function fetchMoisture() {
@@ -235,8 +235,8 @@
         }
     }
 
-    // Function to download the log as CSV
-      function downloadCSV() {
+   
+    function downloadCSV() {
     if (moistureLog.length === 0 && pumpLog.length === 0) {
         alert("No data available to download.");
         return;
