@@ -149,13 +149,13 @@
 
     <div class="button-container">
         <button class="refresh-btn" onclick="fetchMoisture()">Refresh Moisture</button>
-        <button class="on-btn" onclick="controlPump(1)">Turn ON</button>
-        <button class="off-btn" onclick="controlPump(0)">Turn OFF</button>
+        <button class="on-btn" onclick="controlPump(0)">Turn ON</button>
+        <button class="off-btn" onclick="controlPump(1)">Turn OFF</button>
         <button class="csv-btn" onclick="downloadCSV()">Download CSV</button>
     </div>
 
     <footer>
-        🌿 Designed by <strong>GROUP 255</strong> | IoT Project
+        🌿 Designed by <strong>Aditya Kumar Lala</strong> | IoT Project
     </footer>
 </div>
 
@@ -234,7 +234,7 @@
 
     // Function to log pump activity
     function logPumpActivity(state, isAuto) {
-        const action = state === 1 ? "ON" : "OFF";
+        const action = state === 0 ? "ON" : "OFF";
         const source = isAuto ? "Auto" : "Manual";
         const timestamp = new Date().toLocaleString();
 
